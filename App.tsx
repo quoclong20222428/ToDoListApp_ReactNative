@@ -5,114 +5,115 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useState } from 'react';
 import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
-  View,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import TaskComponent from './TaskComponent';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [task, setTask] = useState<any>()
+  const [taskItems, setTaskItems] = useState<any>([])
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const handleAddTask = () => {
+    Keyboard.dismiss()
+    if (task !== null) {
+      setTaskItems([...taskItems, task])
+      setTask(null)
+    }
+    else Alert.alert('Caution', 'Task is not been allow empty content')
+  }
+
+  const deleteTask = (index: number) => {
+    const itemCopy = [...taskItems]
+    itemCopy.splice(index, 1)
+    setTaskItems(itemCopy)
+  }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps='handled'>
+        <View style={styles.taskWrapper}>
+          <Text style={styles.textTitle}>Today’s tasks</Text>
+          <View>
+            {
+              taskItems.map((item: string, index: number) => {
+                return (
+                  <TouchableOpacity key={index} onPress={() => deleteTask(index)}>
+                    <TaskComponent text={item} />
+                  </TouchableOpacity>
+                )
+              })
+            }
+          </View>
         </View>
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.writeTaskWrapper}
+        >
+          <TextInput style={styles.taskInput} value={task} placeholder='Write a task' onChangeText={text => setTask(text)} />
+          <TouchableOpacity style={styles.btn} onPress={handleAddTask}>
+            <Text style={styles.btnText}>+</Text>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: '#E8EAED',
   },
-  sectionTitle: {
+  textTitle: {
+    fontWeight: 'bold',
     fontSize: 24,
-    fontWeight: '600',
+    marginBottom: 10,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  taskWrapper: {
+    paddingTop: 80,
+    paddingHorizontal: 20,
+    flex: 1,
   },
-  highlight: {
-    fontWeight: '700',
+  writeTaskWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginBottom: 40,
   },
+  taskInput: {
+    width: 246,
+    height: 45,
+    backgroundColor: 'white',
+    borderRadius: 60,
+    borderWidth: 1,
+    borderColor: '#C0C0C0'
+  },
+  btn: {
+    width: 60,
+    height: 60,
+    borderRadius: 52,
+    backgroundColor: '#55BCF6'
+  },
+  btnText: {
+    color: 'white',
+    justifyContent: 'center',
+    textAlign: 'center',
+    fontSize: 40,
+  }
 });
 
 export default App;
